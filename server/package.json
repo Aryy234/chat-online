@@ -1,0 +1,29 @@
+{
+  "name": "mecanografy-game-server",
+  "version": "1.0.0",
+  "description": "Servidor para juego de mecanografía multijugador",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --loader ts-node/esm index.ts",
+    "dev": "nodemon --exec \"node --loader ts-node/esm\" index.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "mecanografy-game-server": "file:",
+    "socket.io": "^4.7.2",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.4.5",
+    "@types/uuid": "^9.0.2",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6",
+    "vitest": "^0.33.0"
+  }
+}

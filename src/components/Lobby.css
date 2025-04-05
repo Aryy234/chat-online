@@ -1,0 +1,131 @@
+.lobby-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.lobby-container h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.lobby-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group label {
+  font-weight: bold;
+  color: #555;
+}
+
+.input-group input {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+  border-color: #4a90e2;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.room-options {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.vertical-divider {
+  height: 150px;
+  border-left: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  color: #888;
+  padding: 0 1rem;
+}
+
+.create-room-btn, .join-room-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.create-room-btn:hover, .join-room-btn:hover {
+  background-color: #357abf;
+}
+
+.create-room-btn:disabled, .join-room-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.join-room-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+}
+
+.room-list {
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.room-list h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.room-list ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.room-list li {
+  padding: 0.5rem;
+  margin-bottom: 0.25rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.room-list li:hover {
+  background-color: #f0f7ff;
+}
+
+.room-list li.selected {
+  background-color: #e3f2fd;
+  border-left: 3px solid #4a90e2;
+}
+
+.no-rooms {
+  color: #888;
+  font-style: italic;
+} 
