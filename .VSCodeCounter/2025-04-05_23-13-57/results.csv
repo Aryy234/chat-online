@@ -1,0 +1,34 @@
+"filename", "language", "TypeScript", "JSON", "JSON with Comments", "Markdown", "HTML", "JavaScript", "TypeScript JSX", "CSS", "XML", "comment", "blank", "total"
+"c:\Proyectos\videogames\mecanografy-game\README.md", "Markdown", 0, 0, 0, 117, 0, 0, 0, 0, 0, 0, 35, 152
+"c:\Proyectos\videogames\mecanografy-game\eslint.config.js", "JavaScript", 0, 0, 0, 0, 0, 27, 0, 0, 0, 0, 2, 29
+"c:\Proyectos\videogames\mecanografy-game\index.html", "HTML", 0, 0, 0, 0, 13, 0, 0, 0, 0, 0, 1, 14
+"c:\Proyectos\videogames\mecanografy-game\package-lock.json", "JSON", 0, 6852, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6853
+"c:\Proyectos\videogames\mecanografy-game\package.json", "JSON", 0, 48, 0, 0, 0, 0, 0, 0, 0, 0, 1, 49
+"c:\Proyectos\videogames\mecanografy-game\public\vite.svg", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1
+"c:\Proyectos\videogames\mecanografy-game\server\index.ts", "TypeScript", 197, 0, 0, 0, 0, 0, 0, 0, 0, 27, 55, 279
+"c:\Proyectos\videogames\mecanografy-game\server\package-lock.json", "JSON", 0, 2947, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2948
+"c:\Proyectos\videogames\mecanografy-game\server\package.json", "JSON", 0, 29, 0, 0, 0, 0, 0, 0, 0, 0, 1, 30
+"c:\Proyectos\videogames\mecanografy-game\server\server.test.ts", "TypeScript", 75, 0, 0, 0, 0, 0, 0, 0, 0, 8, 7, 90
+"c:\Proyectos\videogames\mecanografy-game\server\tsconfig.json", "JSON with Comments", 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 15
+"c:\Proyectos\videogames\mecanografy-game\server\vite.config.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 9
+"c:\Proyectos\videogames\mecanografy-game\src\App.css", "CSS", 0, 0, 0, 0, 0, 0, 0, 266, 0, 4, 48, 318
+"c:\Proyectos\videogames\mecanografy-game\src\App.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 63, 0, 0, 3, 9, 75
+"c:\Proyectos\videogames\mecanografy-game\src\assets\react.svg", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1
+"c:\Proyectos\videogames\mecanografy-game\src\components\ChatRoom.css", "CSS", 0, 0, 0, 0, 0, 0, 0, 153, 0, 0, 25, 178
+"c:\Proyectos\videogames\mecanografy-game\src\components\ChatRoom.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 168, 0, 0, 15, 30, 213
+"c:\Proyectos\videogames\mecanografy-game\src\components\Lobby.css", "CSS", 0, 0, 0, 0, 0, 0, 0, 112, 0, 0, 19, 131
+"c:\Proyectos\videogames\mecanografy-game\src\components\Lobby.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 129, 0, 0, 3, 17, 149
+"c:\Proyectos\videogames\mecanografy-game\src\components\__tests__\ChatRoom.test.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 86, 0, 0, 8, 22, 116
+"c:\Proyectos\videogames\mecanografy-game\src\components\__tests__\Lobby.test.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 56, 0, 0, 12, 17, 85
+"c:\Proyectos\videogames\mecanografy-game\src\context\SocketContext.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 65, 0, 0, 7, 17, 89
+"c:\Proyectos\videogames\mecanografy-game\src\index.css", "CSS", 0, 0, 0, 0, 0, 0, 0, 61, 0, 0, 8, 69
+"c:\Proyectos\videogames\mecanografy-game\src\main.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 12, 0, 0, 0, 2, 14
+"c:\Proyectos\videogames\mecanografy-game\src\setupTests.ts", "TypeScript", 19, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 25
+"c:\Proyectos\videogames\mecanografy-game\src\types.ts", "TypeScript", 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 13
+"c:\Proyectos\videogames\mecanografy-game\src\types\index.ts", "TypeScript", 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 18
+"c:\Proyectos\videogames\mecanografy-game\src\vite-env.d.ts", "TypeScript", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2
+"c:\Proyectos\videogames\mecanografy-game\tsconfig.app.json", "JSON", 0, 22, 0, 0, 0, 0, 0, 0, 0, 2, 3, 27
+"c:\Proyectos\videogames\mecanografy-game\tsconfig.json", "JSON with Comments", 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 1, 8
+"c:\Proyectos\videogames\mecanografy-game\tsconfig.node.json", "JSON", 0, 20, 0, 0, 0, 0, 0, 0, 0, 2, 3, 25
+"c:\Proyectos\videogames\mecanografy-game\vite.config.ts", "TypeScript", 10, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 13
+"Total", "-", 337, 9918, 22, 117, 13, 27, 579, 592, 2, 96, 335, 12038
