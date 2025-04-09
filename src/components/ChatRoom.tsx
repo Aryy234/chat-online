@@ -10,26 +10,32 @@ interface ChatRoomProps {
   onLeaveRoom: () => void;
 }
 
+interface TypingUser {
+  userId: string;
+  username: string;
+  timestamp: number;
+}
+
 function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
   const [messageText, setMessageText] = useState('');
   const { socket, users, messages } = useSocket();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const typingTimerRef = useRef<number | null>(null);
+  const [showCopied, setShowCopied] = useState(false);
 
-  // Conectar directamente al socket para escuchar mensajes
   useEffect(() => {
     if (!socket) return;
     
     console.log("ChatRoom - Configurando listener para receive_message");
     
-    // Handler para recibir mensajes
     const handleReceiveMessage = (message: Message) => {
       console.log("ChatRoom - Mensaje recibido directamente:", message);
       
       if (message.roomId === roomId) {
         console.log("ChatRoom - Mensaje para esta sala, añadiendo:", message);
         setLocalMessages(prev => {
-          // Verificar si el mensaje ya existe
           const exists = prev.some(m => m.id === message.id);
           if (exists) return prev;
           return [...prev, message];
@@ -37,28 +43,33 @@ function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
       }
     };
     
-    // Suscribirse al evento
-    socket.on('receive_message', handleReceiveMessage);
+    const handleTypingUpdate = (users: TypingUser[]) => {
+      console.log("ChatRoom - Actualizando usuarios escribiendo:", users);
+      const filteredUsers = users.filter(user => user.userId !== userId);
+      setTypingUsers(filteredUsers);
+    };
     
-    // Limpiar al desmontar
+    socket.on('receive_message', handleReceiveMessage);
+    socket.on('typing_update', handleTypingUpdate);
+    
     return () => {
       socket.off('receive_message', handleReceiveMessage);
+      socket.off('typing_update', handleTypingUpdate);
+      
+      if (typingTimerRef.current !== null) {
+        clearTimeout(typingTimerRef.current);
+      }
     };
-  }, [socket, roomId]);
+  }, [socket, roomId, userId]);
 
-  // Combinar mensajes del contexto con los recibidos directamente
   useEffect(() => {
     console.log("ChatRoom - Actualizando mensajes locales desde contexto");
     
-    // Filtrar mensajes para esta sala
     const filteredMessages = messages.filter(msg => msg.roomId === roomId);
     
-    // Combinar mensajes del contexto con los recibidos directamente
     setLocalMessages(prevLocal => {
-      // Crear un mapa de los mensajes existentes por ID
       const existingIds = new Map(prevLocal.map(msg => [msg.id, msg]));
       
-      // Añadir mensajes del contexto que no estén ya en los locales
       for (const msg of filteredMessages) {
         if (!existingIds.has(msg.id)) {
           existingIds.set(msg.id, msg);
@@ -69,12 +80,10 @@ function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
     });
   }, [messages, roomId]);
 
-  // Registramos cuando cambian usuarios o props para detectar problemas
   useEffect(() => {
     console.log("ChatRoom - usuarios actualizados:", users);
   }, [users]);
 
-  // Hacer scroll hacia abajo cuando llegan nuevos mensajes
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [localMessages.length]);
@@ -84,7 +93,29 @@ function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
     return new Date(timestamp).toLocaleTimeString();
   };
 
-  // Función para enviar un mensaje de prueba
+  const handleMessageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const text = e.target.value;
+    setMessageText(text);
+    
+    if (!socket) return;
+    
+    const isTyping = text.length > 0;
+    
+    socket.emit('typing', { roomId, userId, username, isTyping });
+    
+    if (typingTimerRef.current !== null) {
+      clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+    
+    if (!isTyping) return;
+    
+    typingTimerRef.current = window.setTimeout(() => {
+      socket.emit('typing', { roomId, userId, username, isTyping: false });
+      typingTimerRef.current = null;
+    }, 3000);
+  };
+
   const sendTestMessage = () => {
     if (socket) {
       const testMsg = {
@@ -119,6 +150,13 @@ function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
       });
 
       setMessageText('');
+      
+      if (typingTimerRef.current !== null) {
+        clearTimeout(typingTimerRef.current);
+        typingTimerRef.current = null;
+      }
+      
+      socket.emit('typing', { roomId, userId, username, isTyping: false });
     }
   };
 
@@ -136,11 +174,72 @@ function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
     }
   };
 
+  const renderTypingIndicator = () => {
+    if (typingUsers.length === 0) return null;
+    
+    let typingMessage = '';
+    if (typingUsers.length === 1) {
+      typingMessage = `${typingUsers[0].username} está escribiendo...`;
+    } else if (typingUsers.length === 2) {
+      typingMessage = `${typingUsers[0].username} y ${typingUsers[1].username} están escribiendo...`;
+    } else {
+      typingMessage = `${typingUsers.length} personas están escribiendo...`;
+    }
+    
+    return (
+      <div className="typing-indicator">
+        {typingMessage}
+      </div>
+    );
+  };
+
+  const copyInviteLink = () => {
+    const baseUrl = window.location.origin;
+    const inviteLink = `${baseUrl}?room=${roomId}`;
+    
+    navigator.clipboard.writeText(inviteLink)
+      .then(() => {
+        setShowCopied(true);
+        setTimeout(() => {
+          setShowCopied(false);
+        }, 3000);
+      })
+      .catch((err) => {
+        console.error('Error al copiar al portapapeles:', err);
+        alert('No se pudo copiar el enlace automáticamente. El enlace es: ' + inviteLink);
+      });
+  };
+  
+  const copyRoomCode = () => {
+    navigator.clipboard.writeText(roomId)
+      .then(() => {
+        setShowCopied(true);
+        setTimeout(() => {
+          setShowCopied(false);
+        }, 3000);
+      })
+      .catch((err) => {
+        console.error('Error al copiar al portapapeles:', err);
+        alert('No se pudo copiar el código automáticamente. El código es: ' + roomId);
+      });
+  };
+
   return (
     <div className="chat-room">
       <div className="chat-header">
         <h2>Sala: {roomId.substring(0, 8)}...</h2>
-        <button className="leave-btn" onClick={handleLeaveRoom}>Salir</button>
+        <div className="room-actions">
+          <button className="copy-link-btn" onClick={copyInviteLink}>
+            Copiar enlace de invitación
+          </button>
+          <button className="copy-code-btn" onClick={copyRoomCode}>
+            Copiar código
+          </button>
+          <button className="leave-btn" onClick={handleLeaveRoom}>
+            Salir
+          </button>
+          {showCopied && <div className="copy-confirmation">¡Copiado al portapapeles!</div>}
+        </div>
       </div>
 
       <div className="chat-container">
@@ -154,7 +253,6 @@ function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
             ))}
           </ul>
           
-          {/* Botón para enviar mensaje de prueba */}
           <button 
             className="test-btn"
             onClick={sendTestMessage}
@@ -187,11 +285,13 @@ function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
             <div ref={messagesEndRef} />
           </div>
 
+          {renderTypingIndicator()}
+
           <form className="message-form" onSubmit={handleSendMessage}>
             <input
               type="text"
               value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
+              onChange={handleMessageInputChange}
               placeholder="Escribe un mensaje..."
               autoFocus
             />
@@ -200,14 +300,14 @@ function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
         </div>
       </div>
 
-      {/* Debug para ver los mensajes en formato JSON */}
       <div className="debug-info" style={{ fontSize: '10px', margin: '10px', color: '#999' }}>
         <div>Users: {users.length}</div>
         <div>Mensajes totales: {messages.length}</div>
         <div>Mensajes en esta sala: {localMessages.length}</div>
+        <div>Usuarios escribiendo: {typingUsers.length}</div>
       </div>
     </div>
   );
 }
 
-export default ChatRoom; 
+export default ChatRoom;

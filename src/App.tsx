@@ -17,11 +17,21 @@ function App() {
     console.log("Unido a sala:", { roomId, username, userId })
     setRoomData({ roomId, username, userId })
     setInRoom(true)
+    
+    // Actualizar la URL para reflejar la sala sin recargar la página
+    window.history.pushState(
+      { roomId }, 
+      '', 
+      `?room=${roomId}`
+    );
   }
 
   const handleLeaveRoom = () => {
     setInRoom(false)
     setRoomData({ roomId: '', username: '', userId: '' })
+    
+    // Limpiar la URL al salir de la sala
+    window.history.pushState({}, '', '/');
   }
 
   return (
@@ -48,7 +58,20 @@ function AppContent({
   onJoinRoom: (roomId: string, username: string, userId: string) => void;
   onLeaveRoom: () => void;
 }) {
-  const { users } = useSocket()
+  const { users } = useSocket();
+
+  // Verificar si hay un ID de sala en la URL al cargar
+  useEffect(() => {
+    if (!inRoom) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomIdFromUrl = urlParams.get('room');
+      
+      if (roomIdFromUrl) {
+        // Almacenar el ID de la sala en localStorage para recuperarlo después de que el usuario ingrese su nombre
+        localStorage.setItem('pendingRoomId', roomIdFromUrl);
+      }
+    }
+  }, [inRoom]);
   
   // Log para debug
   useEffect(() => {

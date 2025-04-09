@@ -18,11 +18,21 @@ function Lobby({ onJoinRoom }: LobbyProps) {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
   const [userId] = useState(() => localStorage.getItem('userId') || uuidv4());
+  const [pendingRoomId, setPendingRoomId] = useState<string | null>(null);
   const { socket } = useSocket();
 
   useEffect(() => {
     // Guardar ID de usuario en localStorage
     localStorage.setItem('userId', userId);
+    
+    // Verificar si hay una sala pendiente a la que unirse (desde URL)
+    const storedPendingRoomId = localStorage.getItem('pendingRoomId');
+    if (storedPendingRoomId) {
+      setPendingRoomId(storedPendingRoomId);
+      setSelectedRoom(storedPendingRoomId);
+      // Limpiar después de usar
+      localStorage.removeItem('pendingRoomId');
+    }
     
     // Obtener lista de salas disponibles
     const fetchRooms = () => {
@@ -30,6 +40,15 @@ function Lobby({ onJoinRoom }: LobbyProps) {
         socket.emit('get_rooms', (rooms: Room[]) => {
           console.log('Salas disponibles:', rooms);
           setAvailableRooms(rooms);
+          
+          // Si tenemos un ID de sala pendiente, verificar si está en la lista
+          if (pendingRoomId) {
+            const roomExists = rooms.some(room => room.id === pendingRoomId);
+            if (!roomExists) {
+              console.log(`La sala ${pendingRoomId} no existe o fue eliminada`);
+              setPendingRoomId(null);
+            }
+          }
         });
       }
     };
@@ -39,7 +58,7 @@ function Lobby({ onJoinRoom }: LobbyProps) {
     const interval = setInterval(fetchRooms, 5000);
 
     return () => clearInterval(interval);
-  }, [socket, userId]);
+  }, [socket, userId, pendingRoomId]);
 
   const handleCreateRoom = () => {
     if (!username.trim()) {
@@ -66,18 +85,21 @@ function Lobby({ onJoinRoom }: LobbyProps) {
       return;
     }
 
-    if (!selectedRoom) {
+    // Usar la sala seleccionada o la sala pendiente
+    const roomIdToJoin = selectedRoom || pendingRoomId;
+    
+    if (!roomIdToJoin) {
       alert('Por favor selecciona una sala');
       return;
     }
 
     if (socket) {
       socket.emit('join_room', 
-        { roomId: selectedRoom, username, userId }, 
+        { roomId: roomIdToJoin, username, userId }, 
         (response: any) => {
           if (response.success) {
             console.log('Unido a sala:', response);
-            onJoinRoom(selectedRoom, username, userId);
+            onJoinRoom(roomIdToJoin, username, userId);
           } else {
             console.error('Error al unirse a la sala:', response);
             alert(`Error al unirse a la sala: ${response.message}`);
@@ -102,48 +124,63 @@ function Lobby({ onJoinRoom }: LobbyProps) {
           />
         </div>
 
-        <div className="room-options">
-          <button 
-            className="create-room-btn" 
-            onClick={handleCreateRoom}
-            disabled={!username.trim()}
-          >
-            Crear Sala
-          </button>
-          
-          <div className="vertical-divider">o</div>
-          
-          <div className="join-room-section">
-            <div className="room-list">
-              <h3>Salas Disponibles:</h3>
-              {availableRooms.length === 0 ? (
-                <p className="no-rooms">No hay salas disponibles</p>
-              ) : (
-                <ul>
-                  {availableRooms.map((room) => (
-                    <li 
-                      key={room.id} 
-                      className={selectedRoom === room.id ? 'selected' : ''}
-                      onClick={() => setSelectedRoom(room.id)}
-                    >
-                      {room.name} ({room.userCount} usuario{room.userCount !== 1 ? 's' : ''})
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+        {pendingRoomId && (
+          <div className="pending-invitation">
+            <p>Tienes una invitación para unirte a una sala</p>
             <button 
-              className="join-room-btn" 
-              onClick={handleJoinRoom} 
-              disabled={!username.trim() || !selectedRoom}
+              className="join-invitation-btn" 
+              onClick={handleJoinRoom}
+              disabled={!username.trim()}
             >
-              Unirse a Sala
+              Unirse a la sala
             </button>
           </div>
-        </div>
+        )}
+
+        {!pendingRoomId && (
+          <div className="room-options">
+            <button 
+              className="create-room-btn" 
+              onClick={handleCreateRoom}
+              disabled={!username.trim()}
+            >
+              Crear Sala
+            </button>
+            
+            <div className="vertical-divider">o</div>
+            
+            <div className="join-room-section">
+              <div className="room-list">
+                <h3>Salas Disponibles:</h3>
+                {availableRooms.length === 0 ? (
+                  <p className="no-rooms">No hay salas disponibles</p>
+                ) : (
+                  <ul>
+                    {availableRooms.map((room) => (
+                      <li 
+                        key={room.id} 
+                        className={selectedRoom === room.id ? 'selected' : ''}
+                        onClick={() => setSelectedRoom(room.id)}
+                      >
+                        {room.name} ({room.userCount} usuario{room.userCount !== 1 ? 's' : ''})
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <button 
+                className="join-room-btn" 
+                onClick={handleJoinRoom} 
+                disabled={!username.trim() || !selectedRoom}
+              >
+                Unirse a Sala
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-export default Lobby; 
+export default Lobby;

@@ -26,6 +26,49 @@
   white-space: nowrap;
 }
 
+/* Nueva clase para el contenedor de acciones de la sala */
+.room-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.copy-link-btn, .copy-code-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background-color 0.2s;
+}
+
+.copy-link-btn:hover, .copy-code-btn:hover {
+  background-color: #2980b9;
+}
+
+/* Mensaje de confirmación de copia */
+.copy-confirmation {
+  position: absolute;
+  bottom: -30px;
+  right: 0;
+  background-color: #2ecc71;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  animation: fadeIn 0.3s ease-in-out;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .leave-btn {
   background-color: #e74c3c;
   color: white;
@@ -175,4 +218,21 @@
 .message-form button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
-} 
+}
+
+/* Estilos para el indicador "está escribiendo" */
+.typing-indicator {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+  background-color: #f9f9f9;
+  border-top: 1px solid #eee;
+  animation: fadeInOut 2s infinite;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}

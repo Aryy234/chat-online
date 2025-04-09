@@ -3,11 +3,31 @@ import http from 'http';
 import { Server as SocketIO } from 'socket.io';
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Obtener el equivalente a __dirname en módulos ES
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
 
-app.use(cors());
+// Obtener origen de CORS desde variables de entorno (o usar '*' por defecto)
+const corsOrigin = process.env.CORS_ORIGIN || '*';
+
+app.use(cors({
+  origin: corsOrigin
+}));
+
+// Servir archivos estáticos desde la carpeta 'public' (cliente compilado)
+const publicPath = path.resolve(__dirname, '../public');
+app.use(express.static(publicPath));
+
+// Ruta para manejar cualquier otra solicitud y devolver index.html (para enrutamiento del cliente)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
+});
 
 interface User {
   id: string;
@@ -32,13 +52,31 @@ interface Message {
 
 const rooms: Record<string, Room> = {};
 const socketToUserMap: Record<string, { userId: string; username: string; roomId: string | null }> = {};
+// Registro de usuarios que están escribiendo
+const typingUsers: Record<string, { userId: string; username: string; timestamp: number }[]> = {};
 
 const io = new SocketIO(server, {
   cors: {
-    origin: '*',
+    origin: corsOrigin,
     methods: ['GET', 'POST'],
   },
 });
+
+// Función para limpiar usuarios que dejaron de escribir hace más de 3 segundos
+const cleanupTypingUsers = (roomId: string) => {
+  const now = Date.now();
+  if (typingUsers[roomId]) {
+    typingUsers[roomId] = typingUsers[roomId].filter(user => now - user.timestamp < 3000);
+    
+    // Enviar la lista actualizada a todos en la sala
+    io.in(roomId).emit('typing_update', typingUsers[roomId]);
+    
+    // Si no hay más usuarios escribiendo, limpiar el arreglo
+    if (typingUsers[roomId].length === 0) {
+      delete typingUsers[roomId];
+    }
+  }
+};
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
@@ -54,6 +92,16 @@ io.on('connection', (socket) => {
         rooms[roomId].users = rooms[roomId].users.filter(user => user.id !== userId);
         console.log(`User ${username} removed from room ${roomId}`);
         
+        // Limpiar el estado "está escribiendo" si el usuario desconecta
+        if (typingUsers[roomId]) {
+          typingUsers[roomId] = typingUsers[roomId].filter(user => user.userId !== userId);
+          if (typingUsers[roomId].length === 0) {
+            delete typingUsers[roomId];
+          } else {
+            io.in(roomId).emit('typing_update', typingUsers[roomId]);
+          }
+        }
+        
         // Notificar a todos en la sala (incluido el que se desconecta) que el usuario se fue
         io.in(roomId).emit('user_left', { userId, username });
         
@@ -63,6 +111,7 @@ io.on('connection', (socket) => {
         // Si la sala quedó vacía, eliminarla
         if (rooms[roomId].users.length === 0) {
           delete rooms[roomId];
+          delete typingUsers[roomId];
           console.log(`Room ${roomId} deleted because it's empty`);
         }
       }
@@ -70,6 +119,45 @@ io.on('connection', (socket) => {
     
     // Eliminar la asociación de socket a usuario
     delete socketToUserMap[socket.id];
+  });
+
+  // Nuevo evento para cuando un usuario está escribiendo
+  socket.on('typing', ({ roomId, userId, username, isTyping }) => {
+    console.log(`User ${username} ${isTyping ? 'is typing' : 'stopped typing'} in room ${roomId}`);
+    
+    if (!rooms[roomId]) return;
+    
+    // Inicializar el arreglo de usuarios escribiendo si no existe
+    if (!typingUsers[roomId]) {
+      typingUsers[roomId] = [];
+    }
+    
+    // Si el usuario está escribiendo, añadirlo a la lista
+    if (isTyping) {
+      const existingIndex = typingUsers[roomId].findIndex(user => user.userId === userId);
+      const now = Date.now();
+      
+      if (existingIndex >= 0) {
+        // Actualizar timestamp si ya existe
+        typingUsers[roomId][existingIndex].timestamp = now;
+      } else {
+        // Agregar a la lista si no existe
+        typingUsers[roomId].push({
+          userId,
+          username,
+          timestamp: now
+        });
+      }
+    } else {
+      // Si dejó de escribir, quitarlo de la lista
+      typingUsers[roomId] = typingUsers[roomId].filter(user => user.userId !== userId);
+    }
+    
+    // Enviar la lista actualizada a todos en la sala
+    io.in(roomId).emit('typing_update', typingUsers[roomId]);
+    
+    // Programar limpieza de usuarios que dejaron de escribir
+    setTimeout(() => cleanupTypingUsers(roomId), 3000);
   });
 
   socket.on('create_room', ({ username, userId }, callback) => {
@@ -210,6 +298,19 @@ io.on('connection', (socket) => {
       return;
     }
     
+    // Cuando un usuario envía un mensaje, automáticamente dejó de escribir
+    if (typingUsers[roomId]) {
+      typingUsers[roomId] = typingUsers[roomId].filter(user => user.userId !== userId);
+      
+      // Enviar actualización si aún quedan usuarios escribiendo
+      if (typingUsers[roomId].length > 0) {
+        io.in(roomId).emit('typing_update', typingUsers[roomId]);
+      } else {
+        delete typingUsers[roomId];
+        io.in(roomId).emit('typing_update', []);
+      }
+    }
+    
     const messageId = uuidv4();
     const timestamp = new Date().toISOString();
     
@@ -272,8 +373,8 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-}); 
+});

@@ -2,8 +2,11 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { io, Socket } from 'socket.io-client';
 import { User, Message } from '../types';
 
+// Obtener la URL del servidor Socket.IO desde las variables de entorno
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
+
 // Crear una única instancia del socket fuera del componente
-const socket = io('http://localhost:3001');
+const socket = io(SOCKET_URL);
 
 interface SocketContextType {
   socket: Socket;
@@ -86,4 +89,4 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       {children}
     </SocketContext.Provider>
   );
-}; 
+};
