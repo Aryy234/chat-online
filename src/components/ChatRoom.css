@@ -14,7 +14,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background-color: #4a90e2;
+  background-color: #333333; /* Cambiado de #4a90e2 (azul) a #333333 (gris oscuro) */
   color: white;
 }
 
@@ -35,7 +35,7 @@
 }
 
 .copy-link-btn, .copy-code-btn {
-  background-color: #3498db;
+  background-color: #444444; /* Cambiado de #3498db (azul) a #444444 (gris) */
   color: white;
   border: none;
   padding: 0.5rem;
@@ -46,7 +46,7 @@
 }
 
 .copy-link-btn:hover, .copy-code-btn:hover {
-  background-color: #2980b9;
+  background-color: #555555; /* Cambiado a un gris más claro al hacer hover */
 }
 
 /* Mensaje de confirmación de copia */
@@ -70,7 +70,7 @@
 }
 
 .leave-btn {
-  background-color: #e74c3c;
+  background-color: #444444; /* Cambiado de #e74c3c (rojo) a #444444 (gris) */
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -80,7 +80,7 @@
 }
 
 .leave-btn:hover {
-  background-color: #c0392b;
+  background-color: #555555; /* Cambiado para consistencia */
 }
 
 .chat-container {
@@ -150,7 +150,8 @@
 
 .message.my-message {
   align-self: flex-end;
-  background-color: #dcf8c6;
+  background-color: #303030; /* Cambiado de #dcf8c6 a un tono gris oscuro */
+  color: #fff; /* Texto en blanco para mejor contraste */
 }
 
 .message.other-message {
@@ -163,16 +164,20 @@
   justify-content: space-between;
   margin-bottom: 0.3rem;
   font-size: 0.8rem;
+  flex-direction: column; /* Cambiado para alinear elementos verticalmente */
 }
 
 .sender {
   font-weight: bold;
-  color: #555;
+  color: inherit; /* Para que herede el color del contenedor padre */
+  margin-bottom: 0.2rem;
 }
 
 .timestamp {
   color: #999;
   font-size: 0.7rem;
+  text-align: right; /* Alineamos a la derecha la hora */
+  margin-top: 0.3rem; /* Espacio entre el mensaje y la hora */
 }
 
 .message-content {

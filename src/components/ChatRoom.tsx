@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSocket } from '../context/SocketContext';
 import './ChatRoom.css';
-import { Message, User } from '../types';
+import { Message } from '../types';
 
 interface ChatRoomProps {
   roomId: string;
@@ -18,12 +18,23 @@ interface TypingUser {
 
 function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
   const [messageText, setMessageText] = useState('');
-  const { socket, users, messages } = useSocket();
+  const { socket, users, messages, setCurrentRoomId } = useSocket();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const typingTimerRef = useRef<number | null>(null);
   const [showCopied, setShowCopied] = useState(false);
+  
+  // Al montar el componente, establecer el roomId actual en el contexto
+  useEffect(() => {
+    console.log("ChatRoom - Estableciendo roomId en contexto:", roomId);
+    setCurrentRoomId(roomId);
+    
+    // Limpiar cuando se desmonte
+    return () => {
+      setCurrentRoomId(null);
+    };
+  }, [roomId, setCurrentRoomId]);
 
   useEffect(() => {
     if (!socket) return;
@@ -82,7 +93,15 @@ function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
 
   useEffect(() => {
     console.log("ChatRoom - usuarios actualizados:", users);
-  }, [users]);
+    
+    // Solicitar actualización de usuarios si la lista está vacía
+    if (users.length === 0 && socket && roomId) {
+      console.log("Solicitando actualización de usuarios para la sala:", roomId);
+      socket.emit('get_room_users', { roomId }, (response: any) => {
+        console.log("Respuesta de get_room_users:", response);
+      });
+    }
+  }, [users, socket, roomId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -209,20 +228,6 @@ function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
         alert('No se pudo copiar el enlace automáticamente. El enlace es: ' + inviteLink);
       });
   };
-  
-  const copyRoomCode = () => {
-    navigator.clipboard.writeText(roomId)
-      .then(() => {
-        setShowCopied(true);
-        setTimeout(() => {
-          setShowCopied(false);
-        }, 3000);
-      })
-      .catch((err) => {
-        console.error('Error al copiar al portapapeles:', err);
-        alert('No se pudo copiar el código automáticamente. El código es: ' + roomId);
-      });
-  };
 
   return (
     <div className="chat-room">
@@ -230,15 +235,12 @@ function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
         <h2>Sala: {roomId.substring(0, 8)}...</h2>
         <div className="room-actions">
           <button className="copy-link-btn" onClick={copyInviteLink}>
-            Copiar enlace de invitación
-          </button>
-          <button className="copy-code-btn" onClick={copyRoomCode}>
-            Copiar código
+            Compartir sala
           </button>
           <button className="leave-btn" onClick={handleLeaveRoom}>
             Salir
           </button>
-          {showCopied && <div className="copy-confirmation">¡Copiado al portapapeles!</div>}
+          {showCopied && <div className="copy-confirmation">¡Enlace copiado!</div>}
         </div>
       </div>
 
@@ -256,7 +258,7 @@ function ChatRoom({ roomId, username, userId, onLeaveRoom }: ChatRoomProps) {
           <button 
             className="test-btn"
             onClick={sendTestMessage}
-            style={{ marginTop: '20px', padding: '5px' }}
+            style={{ marginTop: '20px', padding: '5px', display: 'none' }}
           >
             Enviar Prueba
           </button>

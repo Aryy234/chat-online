@@ -1,4 +1,9 @@
-FROM node:20-alpine
+FROM node:20.12-alpine3.19
+
+# Añadir etiquetas
+LABEL maintainer="MecanografyGame"
+LABEL version="1.0"
+LABEL description="Juego de mecanografía multijugador"
 
 # Crear directorio de trabajo
 WORKDIR /app
