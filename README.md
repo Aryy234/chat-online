@@ -1,6 +1,6 @@
-# Juego de Mecanografía Multijugador
+# Chat Online
 
-Aplicación multijugador simple que permite a los jugadores crear salas, unirse a ellas mediante un código, y chatear en tiempo real.
+Chat que permite a jugadores crear salas, unirse a ellas mediante un código, y chatear en tiempo real.
 
 ## Características
 
